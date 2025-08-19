@@ -1,59 +1,12 @@
-name: Deploy to Railway
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    types: [closed]
-    branches: [main]
-  workflow_dispatch:
-
+name: Railway Deploy
+on: [push]
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli@latest
-        
-      - name: Verify Railway CLI installation
-        run: railway --version
-        
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "🚂 Starting Railway deployment..."
-          echo "📁 Current directory: $(pwd)"
-          echo "📋 Files in directory:"
-          ls -la
-          
-          # Check Railway CLI and token
-          echo "🔍 Checking Railway CLI and authentication..."
-          railway --version
-          echo "Token length: ${#RAILWAY_TOKEN}"
-          
-          # Railway should auto-authenticate with RAILWAY_TOKEN
-          echo "🔐 Railway will use RAILWAY_TOKEN for authentication..."
-          
-          # List projects to verify authentication  
-          echo "📋 Listing Railway projects..."
-          railway list || echo "No projects found or auth failed"
-          
-          # Try simple deploy
-          echo "🚀 Attempting deployment..."
-          railway up --detach || railway deploy --detach || echo "Deploy failed, but continuing..."
-          
-      - name: Deployment Success
-        run: |
-          echo "🎉 Railway deployment completed successfully!"
-          echo "Check Railway dashboard for service URL and logs."
+      - uses: actions/checkout@v4
+      - run: |
+          npm i -g @railway/cli
+          export RAILWAY_TOKEN=865b4851-d367-4c12-89dd-9d04ae397529
+          railway link || railway init
+          railway up --detach
