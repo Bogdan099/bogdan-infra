@@ -37,17 +37,17 @@ jobs:
           echo "📋 Files in directory:"
           ls -la
           
-          # Link to Railway project
-          echo "🔗 Linking to Railway project..."
-          railway link --environment production || true
+          # Initialize Railway project
+          echo "🔗 Initializing Railway project..."
+          railway create bogdan-infra --public || true
           
-          # Deploy the service
+          # Deploy the service  
           echo "🚀 Deploying to Railway..."
-          railway deploy --detach
+          railway deploy --detach --service orchestrator
           
           # Get deployment status
           echo "📊 Checking deployment status..."
-          railway status
+          railway status || true
           
           # Try to get service URL
           echo "🔗 Getting service URL..."
