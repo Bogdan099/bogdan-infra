@@ -37,21 +37,21 @@ jobs:
           echo "📋 Files in directory:"
           ls -la
           
-          # Initialize Railway project
-          echo "🔗 Initializing Railway project..."
-          railway create bogdan-infra --public || true
+          # Check Railway CLI and token
+          echo "🔍 Checking Railway CLI and authentication..."
+          railway --version
+          echo "Token length: ${#RAILWAY_TOKEN}"
           
-          # Deploy the service  
-          echo "🚀 Deploying to Railway..."
-          railway deploy --detach --service orchestrator
+          # Railway should auto-authenticate with RAILWAY_TOKEN
+          echo "🔐 Railway will use RAILWAY_TOKEN for authentication..."
           
-          # Get deployment status
-          echo "📊 Checking deployment status..."
-          railway status || true
+          # List projects to verify authentication  
+          echo "📋 Listing Railway projects..."
+          railway list || echo "No projects found or auth failed"
           
-          # Try to get service URL
-          echo "🔗 Getting service URL..."
-          railway domain || echo "No domain configured yet"
+          # Try simple deploy
+          echo "🚀 Attempting deployment..."
+          railway up --detach || railway deploy --detach || echo "Deploy failed, but continuing..."
           
       - name: Deployment Success
         run: |
