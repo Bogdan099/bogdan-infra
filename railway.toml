@@ -1,0 +1,8 @@
+[build]
+buildpacks = ['python']
+
+[deploy]
+startCommand = 'python main.py'
+
+[service]
+name = 'bogdan-service'
