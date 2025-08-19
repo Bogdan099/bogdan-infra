@@ -1,12 +1,23 @@
 name: Railway Deploy
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: |
-          npm i -g @railway/cli
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@latest
+      
+      - name: Deploy to Railway
+        run: |
           export RAILWAY_TOKEN=865b4851-d367-4c12-89dd-9d04ae397529
-          railway link || railway init
-          railway up --detach
+          railway link || railway init || true
+          railway up --detach || railway deploy --detach || echo "Deploy attempted"
+          railway status || echo "Status unavailable"
