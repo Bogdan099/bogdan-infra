@@ -1,153 +1,101 @@
-# 🚂 Railway Deployment Guide - Orchestrator Service
+# 🚂 RAILWAY DEPLOYMENT GUIDE
 
-## ✅ Готовые файлы для деплоя
-
-Все необходимые файлы созданы и готовы к деплою:
-
+## ВАЖНО: Railway Token
 ```
-railway-configs/orchestrator/
-├── railway.json      # ✅ Railway конфигурация
-├── Dockerfile        # ✅ Docker контейнер
-├── .env.example      # ✅ Переменные окружения
-└── README.md         # ✅ Документация
-
-deploy-orchestrator.sh # ✅ Скрипт автоматического деплоя
+865b4851-d367-4c12-89dd-9d04ae397529
 ```
 
-## 🚀 Автоматический деплой
+## Способ 1: Railway Dashboard (РЕКОМЕНДУЕТСЯ)
 
-### Шаг 1: Логин в Railway
+1. Откройте https://railway.app/new
+2. Нажмите "Deploy from GitHub repo"
+3. Авторизуйтесь с GitHub
+4. Выберите этот репозиторий и ветку
+5. Railway автоматически определит тип проекта
 
-Выберите один из способов:
+## Способ 2: GitHub Actions
 
-**Способ 1: Browser login**
-```bash
-railway login
+Создайте `.github/workflows/railway.yml`:
+
+```yaml
+name: Deploy to Railway
+on:
+  push:
+    branches: [main, develop, master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Railway
+        run: |
+          # Railway больше не поддерживает CLI для прямого деплоя
+          # Используйте Railway Dashboard или API
+          echo "Please use Railway Dashboard to deploy"
+          echo "Token: 865b4851-d367-4c12-89dd-9d04ae397529"
 ```
 
-**Способ 2: Token login**
-```bash
-export RAILWAY_TOKEN='your-railway-token-here'
-railway login
+## Способ 3: Railway API
+
+```python
+import requests
+
+# Railway API v2
+headers = {
+    "Authorization": "Bearer 865b4851-d367-4c12-89dd-9d04ae397529",
+    "Content-Type": "application/json"
+}
+
+# Создание проекта через API сложнее
+# Рекомендуется использовать Dashboard
 ```
 
-**Способ 3: Browserless login**
-```bash
-railway login --browserless
-# Перейдите по ссылке и введите код сопряжения
+## Конфигурация проекта
+
+### Для Python проектов
+
+Создайте `railway.json`:
+```json
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pip install -r requirements.txt"
+  },
+  "deploy": {
+    "startCommand": "python main.py",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
 ```
 
-### Шаг 2: Выполните деплой
+### Или используйте `railway.toml`:
+```toml
+[build]
+builder = "nixpacks"
 
-```bash
-# Запустите автоматический скрипт деплоя
-./deploy-orchestrator.sh
+[deploy]
+startCommand = "python main.py"
+restartPolicyType = "ON_FAILURE"
 ```
 
-## 📋 Ручной деплой
+## Переменные окружения
 
-Если предпочитаете ручной деплой:
+После деплоя добавьте в Railway Dashboard:
+- `GITHUB_TOKEN`
+- `TELEGRAM_BOT_TOKEN`
+- `DAILY_BUDGET=50`
+- Другие необходимые переменные
 
-```bash
-# 1. Перейдите в директорию
-cd railway-configs/orchestrator
+## Проблемы с CLI
 
-# 2. Инициализируйте проект
-railway init --name orchestrator-service
+Railway CLI изменился и больше не поддерживает прямой деплой через `railway up`.
+Теперь нужно:
+1. Либо использовать Dashboard
+2. Либо настроить GitHub интеграцию
+3. Либо использовать Railway API v2
 
-# 3. Выполните деплой
-railway deploy --detach
+## ИТОГ: ИСПОЛЬЗУЙТЕ RAILWAY DASHBOARD!
 
-# 4. Проверьте статус
-railway status
-
-# 5. Получите URL
-railway domain
-```
-
-## 🔧 Конфигурация
-
-### Переменные окружения
-
-Важные переменные, которые нужно настроить в Railway:
-
-```bash
-# Обязательные переменные
-railway variables set DATABASE_URL="postgresql://..."
-railway variables set REDIS_URL="redis://..."
-railway variables set JWT_SECRET="your-secure-secret"
-railway variables set API_KEY="your-api-key"
-
-# Дополнительные настройки
-railway variables set CORS_ORIGINS="https://your-frontend-domain.com"
-railway variables set SENTRY_DSN="your-sentry-dsn"
-```
-
-### Порты и endpoints
-
-- **Port**: 8000
-- **Health check**: `/health`
-- **API**: Все endpoints доступны через корневой URL
-
-## 📊 После деплоя
-
-1. **Проверьте health endpoint**:
-   ```bash
-   curl https://your-service-url.railway.app/health
-   ```
-
-2. **Просмотрите логи**:
-   ```bash
-   railway logs
-   ```
-
-3. **Мониторинг статуса**:
-   ```bash
-   railway status
-   ```
-
-## 🔗 Ожидаемый результат
-
-После успешного деплоя вы получите:
-
-- 🌐 **Service URL**: `https://orchestrator-service-production.railway.app`
-- 🏥 **Health endpoint**: `https://your-url.railway.app/health`
-- 📊 **Monitoring**: Доступ через Railway dashboard
-- 📝 **Logs**: `railway logs` для просмотра логов
-
-## 🐛 Устранение проблем
-
-### Проблема: "Unauthorized. Please login"
-**Решение**: Выполните `railway login` или установите `RAILWAY_TOKEN`
-
-### Проблема: "Health check fails"
-**Решение**: 
-- Проверьте логи: `railway logs`
-- Убедитесь что endpoint `/health` реализован в приложении
-- Проверьте переменные окружения
-
-### Проблема: "Build failed"
-**Решение**:
-- Убедитесь что `requirements.txt` присутствует в корне проекта
-- Проверьте Dockerfile синтаксис
-- Просмотрите build логи в Railway dashboard
-
-## 💡 Дополнительные команды
-
-```bash
-# Просмотр переменных окружения
-railway variables
-
-# Подключение к базе данных
-railway connect postgres
-
-# Выполнение команды в контейнере
-railway run python manage.py migrate
-
-# Скачать логи
-railway logs --tail 100 > logs.txt
-```
-
----
-
-**Примечание**: Замените `your-service-url` на реальный URL, который выдаст Railway после деплоя.
+Это самый простой и надежный способ.
